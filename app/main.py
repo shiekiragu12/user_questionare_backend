@@ -5,6 +5,7 @@ import openai
 import os
 from dotenv import load_dotenv
 from datetime import datetime
+from openai import OpenAI
 
 # Load environment variables
 load_dotenv()
@@ -50,8 +51,10 @@ async def process_query(query: Query):
         )
 
     try:
+        client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
         # Dynamic LLM call
-        response = openai.ChatCompletion.create(
+        response = client.chat.completions.create(
             model=query.model,
             messages=[
                 {"role": "system", "content": "You are a helpful assistant."},
@@ -67,7 +70,7 @@ async def process_query(query: Query):
             "timestamp": datetime.now().isoformat()  
         }
         
-    except openai.error.AuthenticationError:
+    except openai.AuthenticationError:
         raise HTTPException(
             status_code=401,
             detail="Invalid OpenAI API key"
